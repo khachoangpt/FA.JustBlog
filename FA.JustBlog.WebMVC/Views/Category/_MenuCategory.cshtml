@@ -1,0 +1,7 @@
+﻿@foreach (var item in Model)
+{
+    <li class="nav-item active">
+        <a class="nav-link" href="@Url.Action("GetPostByCategory", "Post", new { category = item.Name})">@item.Name</a>
+    </li>
+}
+

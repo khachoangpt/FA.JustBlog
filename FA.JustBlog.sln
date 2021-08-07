@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FA.JustBlog.Core", "FA.JustBlog.Core\FA.JustBlog.Core.csproj", "{7331AB9C-1D02-40EB-AE1C-22434B521713}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FA.JustBlog.WebMVC", "FA.JustBlog.WebMVC\FA.JustBlog.WebMVC.csproj", "{89531258-5E5C-4621-8FB3-D989022397F8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7331AB9C-1D02-40EB-AE1C-22434B521713}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7331AB9C-1D02-40EB-AE1C-22434B521713}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7331AB9C-1D02-40EB-AE1C-22434B521713}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7331AB9C-1D02-40EB-AE1C-22434B521713}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89531258-5E5C-4621-8FB3-D989022397F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89531258-5E5C-4621-8FB3-D989022397F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89531258-5E5C-4621-8FB3-D989022397F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89531258-5E5C-4621-8FB3-D989022397F8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DF3B08CA-FFE0-4472-9D0D-148708CFD9C1}
+	EndGlobalSection
+EndGlobal

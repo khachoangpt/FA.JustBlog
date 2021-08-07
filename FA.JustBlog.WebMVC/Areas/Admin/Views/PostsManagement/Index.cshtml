@@ -1,0 +1,54 @@
+﻿@model IEnumerable<FA.JustBlog.Core.Models.Post>
+
+@{
+    ViewBag.Title = "Post Management";
+}
+<h2 class="text-center">Post Management</h2>
+<h3 class="text-success time-hide">@TempData["Message"]</h3>
+<button class="btn btn-primary mb-3">
+    @Html.ActionLink("Create New", "Create", null, new { @class = "text-white text-decoration-none" })
+</button>
+
+<table class="table table-bordered table-dark">
+    <thead>
+        <tr class="text-center">
+            <th scope="col">@Html.DisplayNameFor(model => model.Category.Name)</th>
+            <th scope="col">@Html.DisplayNameFor(model => model.Title)</th>
+            <th scope="col">@Html.DisplayNameFor(model => model.ImageUrl)</th>
+            <th scope="col">@Html.DisplayNameFor(model => model.Published)</th>
+            <th scope="col">@Html.DisplayNameFor(model => model.PostedOn)</th>
+            <th scope="col">@Html.DisplayNameFor(model => model.ViewCount)</th>
+            <th scope="col">@Html.DisplayNameFor(model => model.RateCount)</th>
+            <th scope="col">@Html.DisplayNameFor(model => model.TotalRate)</th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Category.Name)</td>
+                <td>
+                    <a class="text-white" href="@Url.Action("Details", new { id = item.Id})">
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </a>
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.ImageUrl)</td>
+                <td>@Html.DisplayFor(modelItem => item.Published)</td>
+                <td>@Html.DisplayFor(modelItem => item.PostedOn)</td>
+                <td>@Html.DisplayFor(modelItem => item.ViewCount)</td>
+                <td>@Html.DisplayFor(modelItem => item.RateCount)</td>
+                <td>@Html.DisplayFor(modelItem => item.TotalRate)</td>
+                <td class="d-flex">
+                    <a href="@Url.Action("Edit", "PostsManagement", new { id = item.Id})" class="btn btn-primary mr-3">Edit</a>
+                    <form action="@Url.Action("Delete", "PostsManagement", new{ id = item.Id })" method="post">
+                        <button type="submit" onclick="return confirm('Are you sure to delete this category?');" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    $('.time-hide').delay(3000).hide(500);
+</script>

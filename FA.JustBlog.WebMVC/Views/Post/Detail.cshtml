@@ -1,0 +1,23 @@
+﻿@model FA.JustBlog.Core.Models.Post
+@{
+    ViewBag.Title = "Detail Page";
+}
+
+<div class="item">
+    <div class="post_s_item">
+        <div class="post_img">
+            <img class="img-fluid" src="~/assets/images/@Model.ImageUrl" alt="@Model.ImageUrl">
+        </div>
+        <div class="post_text">
+            <a class="cat" href="#">@Model.Category.Name</a>
+            <h4>@Model.Title</h4>
+            <p>@Model.PostContent</p>
+            <div class="date">
+                <a href="#"><i class="fa fa-calendar" aria-hidden="true"></i> @Model.PostedOn</a>
+                <a href="#"><i class="fa fa-comments-o" aria-hidden="true"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+<hr class="my-4" />
+
