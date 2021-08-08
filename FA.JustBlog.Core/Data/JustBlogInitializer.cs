@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace FA.JustBlog.Core.Data
 {
-    public class JustBlogInitializer : DropCreateDatabaseAlways<JustBlogContext>
+    public class JustBlogInitializer : DropCreateDatabaseIfModelChanges<JustBlogContext>
     {
         protected override void Seed(JustBlogContext context)
         {

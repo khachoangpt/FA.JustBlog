@@ -1,129 +1,127 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
+﻿using FA.JustBlog.Core.Models;
+using FA.JustBlog.Core.Repositories;
+using FA.JustBlog.WebMVC.ViewModels;
+using System;
 using System.Net;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Mvc;
-using FA.JustBlog.Core.Data;
-using FA.JustBlog.Core.Models;
 
 namespace FA.JustBlog.WebMVC.Areas.Admin.Controllers
 {
     public class TagsManagementController : Controller
     {
-        private JustBlogContext db = new JustBlogContext();
+        private readonly ITagRepository _tagRepository;
 
-        // GET: Admin/TagsManagement
-        public ActionResult Index()
+        public TagsManagementController()
         {
-            return View(db.Tags.ToList());
+            _tagRepository = new TagRepository();
         }
 
-        // GET: Admin/TagsManagement/Details/5
-        public ActionResult Details(Guid? id)
+        public async Task<ActionResult> Index()
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Tag tag = db.Tags.Find(id);
-            if (tag == null)
-            {
-                return HttpNotFound();
-            }
-            return View(tag);
+            var posts = await _tagRepository.GetAllAsync();
+            return View(posts);
         }
 
-        // GET: Admin/TagsManagement/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Admin/TagsManagement/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,UrlSlug,Description,Count")] Tag tag)
+        [ValidateInput(false)]
+        public async Task<ActionResult> Create(TagViewModel tagViewModel)
         {
             if (ModelState.IsValid)
             {
-                tag.Id = Guid.NewGuid();
-                db.Tags.Add(tag);
-                db.SaveChanges();
+                var tag = new Tag
+                {
+                    Id = Guid.NewGuid(),
+                    Name = tagViewModel.Name,
+                    UrlSlug = tagViewModel.UrlSlug,
+                    Description = tagViewModel.Description,
+                    Count = tagViewModel.Count
+                };
+                var result = await _tagRepository.AddAsync(tag);
+                if (result > 0)
+                {
+                    TempData["Message"] = "Insert successful!";
+                }
+                else
+                {
+                    TempData["Message"] = "Insert failed!";
+                }
                 return RedirectToAction("Index");
             }
 
-            return View(tag);
+            return View(tagViewModel);
         }
 
-        // GET: Admin/TagsManagement/Edit/5
-        public ActionResult Edit(Guid? id)
+        public async Task<ActionResult> Edit(Guid? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Tag tag = db.Tags.Find(id);
-            if (tag == null)
+
+            var tag = await _tagRepository.GetByIdAsync((Guid)id);
+            var tagViewModel = new TagViewModel()
             {
-                return HttpNotFound();
-            }
-            return View(tag);
+                Id = tag.Id,
+                Name = tag.Name,
+                UrlSlug = tag.UrlSlug,
+                Description = tag.Description,
+                Count = tag.Count
+            };
+
+            return View(tagViewModel);
         }
 
-        // POST: Admin/TagsManagement/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,UrlSlug,Description,Count")] Tag tag)
+        [ValidateInput(false)]
+        public async Task<ActionResult> Edit(TagViewModel tagViewModel)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(tag).State = EntityState.Modified;
-                db.SaveChanges();
+                var tag = await _tagRepository.GetByIdAsync(tagViewModel.Id);
+                if (tag == null)
+                {
+                    return HttpNotFound();
+                }
+
+                tag.Name = tagViewModel.Name;
+                tag.UrlSlug = tagViewModel.UrlSlug;
+                tag.Description = tagViewModel.Description;
+                tag.Count = tagViewModel.Count;
+
+                var result = await _tagRepository.UpdateAsync(tag);
+                if (result)
+                {
+                    TempData["Message"] = "Update successful!";
+                }
+                else
+                {
+                    TempData["Message"] = "Update failed!";
+                }
                 return RedirectToAction("Index");
             }
-            return View(tag);
+            return View(tagViewModel);
         }
 
-        // GET: Admin/TagsManagement/Delete/5
-        public ActionResult Delete(Guid? id)
+        public async Task<ActionResult> Delete(Guid? id)
         {
-            if (id == null)
+            var result = await _tagRepository.DeleteAsync((Guid)id);
+            if (result)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                TempData["Message"] = "Delete Successful";
             }
-            Tag tag = db.Tags.Find(id);
-            if (tag == null)
+            else
             {
-                return HttpNotFound();
+                TempData["Message"] = "Delete failed";
             }
-            return View(tag);
-        }
-
-        // POST: Admin/TagsManagement/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(Guid id)
-        {
-            Tag tag = db.Tags.Find(id);
-            db.Tags.Remove(tag);
-            db.SaveChanges();
             return RedirectToAction("Index");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

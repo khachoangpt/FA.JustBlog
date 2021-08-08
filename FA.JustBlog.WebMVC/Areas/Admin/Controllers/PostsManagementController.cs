@@ -1,5 +1,4 @@
-﻿using FA.JustBlog.Core.Data;
-using FA.JustBlog.Core.Models;
+﻿using FA.JustBlog.Core.Models;
 using FA.JustBlog.Core.Repositories;
 using FA.JustBlog.WebMVC.ViewModels;
 using System;
@@ -55,12 +54,17 @@ namespace FA.JustBlog.WebMVC.Areas.Admin.Controllers
                     ImageUrl = postViewModel.ImageUrl,
                     PostContent = postViewModel.PostContent,
                     Published = postViewModel.Published,
+                    PostedOn = DateTime.Now,
+                    Modified = DateTime.Now,
                     ViewCount = postViewModel.ViewCount,
                     RateCount = postViewModel.RateCount,
                     TotalRate = postViewModel.TotalRate,
                     CategoryId = postViewModel.CategoryId,
                     Tags = await GetSelectedTagFromIds(postViewModel.SelectedTagIds)
                 };
+                var result = await _postRepository.AddAsync(post);
+
+                return RedirectToAction("Index");
             }
 
             ViewBag.Categories = new SelectList(await _categoryRepository.GetAllAsync(), "Id", "Name", postViewModel.CategoryId);
@@ -68,7 +72,7 @@ namespace FA.JustBlog.WebMVC.Areas.Admin.Controllers
             return View(postViewModel);
         }
 
-        private async Task<ICollection<Tag>> GetSelectedTagFromIds(IEnumerable<Guid> selectedTagIds)
+        private async Task<IList<Tag>> GetSelectedTagFromIds(IEnumerable<Guid> selectedTagIds)
         {
             var tags = new List<Tag>();
 
@@ -109,6 +113,7 @@ namespace FA.JustBlog.WebMVC.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ValidateInput(false)]
         public async Task<ActionResult> Edit(PostViewModel postViewModel)
         {
             if (ModelState.IsValid)

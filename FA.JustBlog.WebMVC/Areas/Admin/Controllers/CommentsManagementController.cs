@@ -1,134 +1,135 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
+﻿using FA.JustBlog.Core.Models;
+using FA.JustBlog.Core.Repositories;
+using FA.JustBlog.WebMVC.ViewModels;
+using System;
 using System.Net;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Mvc;
-using FA.JustBlog.Core.Data;
-using FA.JustBlog.Core.Models;
 
 namespace FA.JustBlog.WebMVC.Areas.Admin.Controllers
 {
     public class CommentsManagementController : Controller
     {
-        private JustBlogContext db = new JustBlogContext();
+        private readonly ICommentRepository _commentRepository;
+        private readonly IPostRepository _postRepository;
 
-        // GET: Admin/CommentsManagement
-        public ActionResult Index()
+        public CommentsManagementController()
         {
-            var comments = db.Comments.Include(c => c.Post);
-            return View(comments.ToList());
+            _commentRepository = new CommentRepository();
+            _postRepository = new PostRepository();
         }
 
-        // GET: Admin/CommentsManagement/Details/5
-        public ActionResult Details(Guid? id)
+        public async Task<ActionResult> Index()
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Comment comment = db.Comments.Find(id);
-            if (comment == null)
-            {
-                return HttpNotFound();
-            }
-            return View(comment);
+            var posts = await _commentRepository.GetAllAsync();
+            return View(posts);
         }
 
-        // GET: Admin/CommentsManagement/Create
         public ActionResult Create()
         {
-            ViewBag.PostId = new SelectList(db.Posts, "Id", "Title");
             return View();
         }
 
-        // POST: Admin/CommentsManagement/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,Email,PostId,CommentHeader,CommentText,CommentTime")] Comment comment)
+        [ValidateInput(false)]
+        public async Task<ActionResult> Create(CommentViewModel commentViewModel)
         {
             if (ModelState.IsValid)
             {
-                comment.Id = Guid.NewGuid();
-                db.Comments.Add(comment);
-                db.SaveChanges();
+                var comment = new Comment
+                {
+                    Id = Guid.NewGuid(),
+                    Name = commentViewModel.Name,
+                    Email = commentViewModel.Email,
+                    PostId = commentViewModel.PostId,
+                    CommentHeader = commentViewModel.CommentHeader,
+                    CommentText = commentViewModel.CommentText,
+                    CommentTime = commentViewModel.CommentTime
+                };
+                var result = await _commentRepository.AddAsync(comment);
+                if (result > 0)
+                {
+                    TempData["Message"] = "Insert successful!";
+                }
+                else
+                {
+                    TempData["Message"] = "Insert failed!";
+                }
                 return RedirectToAction("Index");
             }
 
-            ViewBag.PostId = new SelectList(db.Posts, "Id", "Title", comment.PostId);
-            return View(comment);
+            return View(commentViewModel);
         }
 
-        // GET: Admin/CommentsManagement/Edit/5
-        public ActionResult Edit(Guid? id)
+        public async Task<ActionResult> Edit(Guid? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Comment comment = db.Comments.Find(id);
-            if (comment == null)
+
+            var comment = await _commentRepository.GetByIdAsync((Guid)id);
+            var commentViewModel = new CommentViewModel()
             {
-                return HttpNotFound();
-            }
-            ViewBag.PostId = new SelectList(db.Posts, "Id", "Title", comment.PostId);
-            return View(comment);
+                Id = comment.Id,
+                Name = comment.Name,
+                Email = comment.Email,
+                PostId = comment.PostId,
+                CommentHeader = comment.CommentHeader,
+                CommentText = comment.CommentText,
+                CommentTime = comment.CommentTime
+            };
+
+            return View(commentViewModel);
         }
 
-        // POST: Admin/CommentsManagement/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,Email,PostId,CommentHeader,CommentText,CommentTime")] Comment comment)
+        [ValidateInput(false)]
+        public async Task<ActionResult> Edit(CommentViewModel commentViewModel)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(comment).State = EntityState.Modified;
-                db.SaveChanges();
+                var comment = await _commentRepository.GetByIdAsync(commentViewModel.Id);
+                if (comment == null)
+                {
+                    return HttpNotFound();
+                }
+
+                comment.Name = commentViewModel.Name;
+                comment.Email = commentViewModel.Email;
+                comment.PostId = commentViewModel.PostId;
+                comment.CommentHeader = commentViewModel.CommentHeader;
+                comment.CommentText = commentViewModel.CommentText;
+                comment.CommentTime = commentViewModel.CommentTime;
+
+                var result = await _commentRepository.UpdateAsync(comment);
+                if (result)
+                {
+                    TempData["Message"] = "Update successful!";
+                }
+                else
+                {
+                    TempData["Message"] = "Update failed!";
+                }
                 return RedirectToAction("Index");
             }
-            ViewBag.PostId = new SelectList(db.Posts, "Id", "Title", comment.PostId);
-            return View(comment);
+            return View(commentViewModel);
         }
 
-        // GET: Admin/CommentsManagement/Delete/5
-        public ActionResult Delete(Guid? id)
+        public async Task<ActionResult> Delete(Guid? id)
         {
-            if (id == null)
+            var result = await _commentRepository.DeleteAsync((Guid)id);
+            if (result)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                TempData["Message"] = "Delete Successful";
             }
-            Comment comment = db.Comments.Find(id);
-            if (comment == null)
+            else
             {
-                return HttpNotFound();
+                TempData["Message"] = "Delete failed";
             }
-            return View(comment);
-        }
-
-        // POST: Admin/CommentsManagement/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(Guid id)
-        {
-            Comment comment = db.Comments.Find(id);
-            db.Comments.Remove(comment);
-            db.SaveChanges();
             return RedirectToAction("Index");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

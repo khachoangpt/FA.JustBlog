@@ -66,7 +66,9 @@
     <Compile Include="Repositories\BaseRepository\GenericRepository.cs" />
     <Compile Include="Repositories\BaseRepository\IGenericRepository.cs" />
     <Compile Include="Repositories\CategoryRepository.cs" />
+    <Compile Include="Repositories\CommentRepository.cs" />
     <Compile Include="Repositories\ICategoryRepository.cs" />
+    <Compile Include="Repositories\ICommentRepository.cs" />
     <Compile Include="Repositories\IPostRepository.cs" />
     <Compile Include="Repositories\ITagRepository.cs" />
     <Compile Include="Repositories\PostRepository.cs" />

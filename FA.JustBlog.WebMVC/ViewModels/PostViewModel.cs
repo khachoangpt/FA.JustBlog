@@ -17,6 +17,7 @@ namespace FA.JustBlog.WebMVC.ViewModels
         [StringLength(255, ErrorMessage = "The {0} must between {2} and {1} characters", MinimumLength = 4)]
         public string ImageUrl { get; set; }
 
+        [AllowHtml]
         [Required(ErrorMessage = "The {0} is required.")]
         [Display(Name = "Post Content")]
         public string PostContent { get; set; }

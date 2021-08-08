@@ -1,129 +1,124 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
+﻿using FA.JustBlog.Core.Models;
+using FA.JustBlog.Core.Repositories;
+using FA.JustBlog.WebMVC.ViewModels;
+using System;
 using System.Net;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Mvc;
-using FA.JustBlog.Core.Data;
-using FA.JustBlog.Core.Models;
 
 namespace FA.JustBlog.WebMVC.Areas.Admin.Controllers
 {
     public class CategoriesManagementController : Controller
     {
-        private JustBlogContext db = new JustBlogContext();
+        private readonly ICategoryRepository _categoryRepository;
 
-        // GET: Admin/CategoriesManagement
-        public ActionResult Index()
+        public CategoriesManagementController()
         {
-            return View(db.Categories.ToList());
+            _categoryRepository = new CategoryRepository();
         }
 
-        // GET: Admin/CategoriesManagement/Details/5
-        public ActionResult Details(Guid? id)
+        public async Task<ActionResult> Index()
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Category category = db.Categories.Find(id);
-            if (category == null)
-            {
-                return HttpNotFound();
-            }
-            return View(category);
+            var posts = await _categoryRepository.GetAllAsync();
+            return View(posts);
         }
 
-        // GET: Admin/CategoriesManagement/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Admin/CategoriesManagement/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,UrlSlug,Description")] Category category)
+        [ValidateInput(false)]
+        public async Task<ActionResult> Create(CategoryViewModel categoryViewModel)
         {
             if (ModelState.IsValid)
             {
-                category.Id = Guid.NewGuid();
-                db.Categories.Add(category);
-                db.SaveChanges();
+                var category = new Category
+                {
+                    Id = Guid.NewGuid(),
+                    Name = categoryViewModel.Name,
+                    UrlSlug = categoryViewModel.UrlSlug,
+                    Description = categoryViewModel.Description
+                };
+                var result = await _categoryRepository.AddAsync(category);
+                if (result > 0)
+                {
+                    TempData["Message"] = "Insert successful!";
+                }
+                else
+                {
+                    TempData["Message"] = "Insert failed!";
+                }
                 return RedirectToAction("Index");
             }
 
-            return View(category);
+            return View(categoryViewModel);
         }
 
-        // GET: Admin/CategoriesManagement/Edit/5
-        public ActionResult Edit(Guid? id)
+        public async Task<ActionResult> Edit(Guid? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Category category = db.Categories.Find(id);
-            if (category == null)
+
+            var category = await _categoryRepository.GetByIdAsync((Guid)id);
+            var categoryViewModel = new CategoryViewModel()
             {
-                return HttpNotFound();
-            }
-            return View(category);
+                Id = category.Id,
+                Name = category.Name,
+                UrlSlug = category.UrlSlug,
+                Description = category.Description
+            };
+
+            return View(categoryViewModel);
         }
 
-        // POST: Admin/CategoriesManagement/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,UrlSlug,Description")] Category category)
+        [ValidateInput(false)]
+        public async Task<ActionResult> Edit(CategoryViewModel categoryViewModel)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(category).State = EntityState.Modified;
-                db.SaveChanges();
+                var category = await _categoryRepository.GetByIdAsync(categoryViewModel.Id);
+                if (category == null)
+                {
+                    return HttpNotFound();
+                }
+
+                category.Name = categoryViewModel.Name;
+                category.UrlSlug = categoryViewModel.UrlSlug;
+                category.Description = categoryViewModel.Description;
+
+                var result = await _categoryRepository.UpdateAsync(category);
+                if (result)
+                {
+                    TempData["Message"] = "Update successful!";
+                }
+                else
+                {
+                    TempData["Message"] = "Update failed!";
+                }
                 return RedirectToAction("Index");
             }
-            return View(category);
+            return View(categoryViewModel);
         }
 
-        // GET: Admin/CategoriesManagement/Delete/5
-        public ActionResult Delete(Guid? id)
+        public async Task<ActionResult> Delete(Guid? id)
         {
-            if (id == null)
+            var result = await _categoryRepository.DeleteAsync((Guid)id);
+            if (result)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                TempData["Message"] = "Delete Successful";
             }
-            Category category = db.Categories.Find(id);
-            if (category == null)
+            else
             {
-                return HttpNotFound();
+                TempData["Message"] = "Delete failed";
             }
-            return View(category);
-        }
-
-        // POST: Admin/CategoriesManagement/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(Guid id)
-        {
-            Category category = db.Categories.Find(id);
-            db.Categories.Remove(category);
-            db.SaveChanges();
             return RedirectToAction("Index");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

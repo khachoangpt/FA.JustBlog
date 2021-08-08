@@ -42,13 +42,10 @@
                 <td class="d-flex">
                     <a href="@Url.Action("Edit", "PostsManagement", new { id = item.Id})" class="btn btn-primary mr-3">Edit</a>
                     <form action="@Url.Action("Delete", "PostsManagement", new{ id = item.Id })" method="post">
-                        <button type="submit" onclick="return confirm('Are you sure to delete this category?');" class="btn btn-danger">Delete</button>
+                        <button type="submit" onclick="return confirm('Are you sure to delete this post?');" class="btn btn-danger">Delete</button>
                     </form>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-<script>
-    $('.time-hide').delay(3000).hide(500);
-</script>
